@@ -1,0 +1,891 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+
+  <meta
+    name="viewport"
+    content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no"
+  >
+
+  <meta name="theme-color" content="#064b35">
+
+  <title>Spring Grove Employee Time Station</title>
+
+  <!-- QR Scanner Library -->
+  <script
+    src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js">
+  </script>
+
+  <style>
+
+    :root {
+      --green: #064b35;
+      --dark-green: #033d2b;
+      --gold: #d7a928;
+      --cream: #f7f4ea;
+      --white: #ffffff;
+      --gray: #62676b;
+      --light-gray: #ececec;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    html,
+    body {
+      margin: 0;
+      width: 100%;
+      min-height: 100%;
+    }
+
+    body {
+      min-height: 100vh;
+
+      font-family:
+        Arial,
+        Helvetica,
+        sans-serif;
+
+      background:
+        linear-gradient(
+          145deg,
+          #f8f4e9,
+          #ebe5d7
+        );
+
+      color: var(--dark-green);
+
+      display: flex;
+      justify-content: center;
+    }
+
+    .kiosk {
+      width: 100%;
+      max-width: 800px;
+      min-height: 100vh;
+
+      background: var(--white);
+
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* HEADER */
+
+    .header {
+      background:
+        linear-gradient(
+          135deg,
+          var(--dark-green),
+          var(--green)
+        );
+
+      color: var(--white);
+
+      text-align: center;
+
+      padding:
+        24px 18px 20px;
+
+      border-bottom:
+        7px solid var(--gold);
+    }
+
+    .logo {
+      width: 72px;
+      height: 72px;
+
+      margin:
+        0 auto 12px;
+
+      border-radius: 50%;
+
+      background: var(--gold);
+
+      border:
+        4px solid
+        rgba(255,255,255,.9);
+
+      color: var(--dark-green);
+
+      display: grid;
+      place-items: center;
+
+      font-size: 29px;
+      font-weight: 800;
+    }
+
+    .school-name {
+      margin: 0;
+
+      font-size:
+        clamp(
+          27px,
+          5vw,
+          42px
+        );
+
+      line-height: 1.05;
+    }
+
+    .station-name {
+      margin:
+        8px 0 0;
+
+      font-size:
+        clamp(
+          14px,
+          2.4vw,
+          19px
+        );
+
+      font-weight: 600;
+
+      letter-spacing: 2px;
+
+      text-transform: uppercase;
+    }
+
+    /* MAIN CONTENT */
+
+    .content {
+      flex: 1;
+
+      padding:
+        25px 18px 30px;
+
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+
+      text-align: center;
+    }
+
+    .instruction {
+      margin:
+        2px 0 6px;
+
+      font-size:
+        clamp(
+          27px,
+          5vw,
+          40px
+        );
+
+      font-weight: 800;
+
+      color: var(--dark-green);
+    }
+
+    .subtext {
+      margin:
+        0 0 20px;
+
+      color: var(--gray);
+
+      font-size:
+        clamp(
+          16px,
+          2.5vw,
+          20px
+        );
+
+      line-height: 1.4;
+    }
+
+    /* CAMERA */
+
+    .camera-card {
+      width: 100%;
+      max-width: 570px;
+
+      padding: 12px;
+
+      background: var(--dark-green);
+
+      border-radius: 22px;
+
+      box-shadow:
+        0 10px 26px
+        rgba(0,0,0,.18);
+    }
+
+    #reader {
+      width: 100%;
+
+      overflow: hidden;
+
+      border-radius: 14px;
+
+      background: #000;
+    }
+
+    #reader video {
+      border-radius: 14px;
+    }
+
+    /* CAMERA TARGET */
+
+    .camera-help {
+      margin-top: 17px;
+
+      display: flex;
+      justify-content: center;
+      align-items: center;
+
+      gap: 9px;
+
+      color: var(--green);
+
+      font-size: 17px;
+      font-weight: 700;
+    }
+
+    .qr-icon {
+      width: 25px;
+      height: 25px;
+
+      display: inline-grid;
+      place-items: center;
+
+      border:
+        2px solid var(--green);
+
+      border-radius: 5px;
+
+      font-size: 14px;
+    }
+
+    /* STATUS */
+
+    #status {
+      min-height: 28px;
+
+      margin-top: 14px;
+
+      color: var(--gray);
+
+      font-size: 15px;
+    }
+
+    /* MANUAL ENTRY */
+
+    .manual-section {
+      width: 100%;
+      max-width: 570px;
+
+      margin-top: 22px;
+      padding-top: 20px;
+
+      border-top:
+        1px solid #dedede;
+    }
+
+    .manual-title {
+      margin:
+        0 0 10px;
+
+      color: var(--gray);
+
+      font-size: 14px;
+      font-weight: 600;
+    }
+
+    .manual-row {
+      display: flex;
+
+      gap: 8px;
+    }
+
+    #manualBadge {
+      flex: 1;
+
+      min-width: 0;
+
+      padding:
+        13px 14px;
+
+      border:
+        2px solid #d6d6d6;
+
+      border-radius: 10px;
+
+      font-size: 18px;
+
+      outline: none;
+    }
+
+    #manualBadge:focus {
+      border-color: var(--green);
+    }
+
+    .submit-button {
+      border: 0;
+
+      border-radius: 10px;
+
+      padding:
+        12px 18px;
+
+      background: var(--green);
+
+      color: var(--white);
+
+      font-size: 16px;
+      font-weight: 700;
+
+      cursor: pointer;
+    }
+
+    .submit-button:active {
+      transform: scale(.98);
+    }
+
+    /* FOOTER */
+
+    .footer {
+      padding: 15px;
+
+      text-align: center;
+
+      background: var(--dark-green);
+
+      color: var(--white);
+
+      font-size: 15px;
+      font-weight: 600;
+
+      letter-spacing: .5px;
+    }
+
+    /* PROCESSING OVERLAY */
+
+    #processingOverlay {
+      position: fixed;
+
+      inset: 0;
+
+      z-index: 9999;
+
+      display: none;
+
+      justify-content: center;
+      align-items: center;
+
+      padding: 20px;
+
+      background:
+        rgba(3,61,43,.96);
+
+      color: var(--white);
+
+      text-align: center;
+    }
+
+    .processing-card {
+      width: 100%;
+      max-width: 480px;
+    }
+
+    .processing-check {
+      width: 90px;
+      height: 90px;
+
+      margin:
+        0 auto 22px;
+
+      border-radius: 50%;
+
+      background: var(--gold);
+
+      color: var(--dark-green);
+
+      display: grid;
+      place-items: center;
+
+      font-size: 50px;
+      font-weight: 800;
+    }
+
+    .processing-title {
+      margin: 0;
+
+      font-size:
+        clamp(
+          30px,
+          6vw,
+          46px
+        );
+    }
+
+    .processing-text {
+      margin-top: 12px;
+
+      font-size: 19px;
+
+      opacity: .9;
+    }
+
+    /* MOBILE / TABLET */
+
+    @media (max-width: 640px) {
+
+      .header {
+        padding:
+          18px 14px 16px;
+      }
+
+      .logo {
+        width: 60px;
+        height: 60px;
+
+        font-size: 24px;
+      }
+
+      .content {
+        padding:
+          20px 14px 24px;
+      }
+
+      .manual-row {
+        flex-direction: column;
+      }
+
+      .submit-button {
+        width: 100%;
+      }
+
+    }
+
+  </style>
+
+</head>
+
+
+<body>
+
+  <main class="kiosk">
+
+    <!-- HEADER -->
+
+    <header class="header">
+
+      <div class="logo">
+        SG
+      </div>
+
+      <h1 class="school-name">
+        SPRING GROVE SCHOOL
+      </h1>
+
+      <p class="station-name">
+        Employee Time Station
+      </p>
+
+    </header>
+
+
+    <!-- MAIN -->
+
+    <section class="content">
+
+      <h2 class="instruction">
+        Scan Your Badge
+      </h2>
+
+      <p class="subtext">
+        Hold your QR code in front of the camera.
+      </p>
+
+
+      <!-- CAMERA -->
+
+      <div class="camera-card">
+
+        <div id="reader"></div>
+
+      </div>
+
+
+      <div class="camera-help">
+
+        <span class="qr-icon">
+          ▦
+        </span>
+
+        Position QR code inside the camera
+
+      </div>
+
+
+      <div id="status">
+        Starting camera...
+      </div>
+
+
+      <!-- MANUAL FALLBACK -->
+
+      <div class="manual-section">
+
+        <p class="manual-title">
+          Badge not scanning? Enter employee number:
+        </p>
+
+        <div class="manual-row">
+
+          <input
+            id="manualBadge"
+            type="text"
+            inputmode="numeric"
+            autocomplete="off"
+            placeholder="Employee Number"
+          >
+
+          <button
+            class="submit-button"
+            onclick="submitManualBadge()"
+          >
+            Submit
+          </button>
+
+        </div>
+
+      </div>
+
+    </section>
+
+
+    <!-- FOOTER -->
+
+    <footer class="footer">
+      One School, One Team
+    </footer>
+
+  </main>
+
+
+  <!-- PROCESSING SCREEN -->
+
+  <div id="processingOverlay">
+
+    <div class="processing-card">
+
+      <div class="processing-check">
+        ✓
+      </div>
+
+      <h2 class="processing-title">
+        Badge Read
+      </h2>
+
+      <div class="processing-text">
+        Recording your time...
+      </div>
+
+    </div>
+
+  </div>
+
+
+  <script>
+
+    /*
+     * =================================================
+     * SPRING GROVE EMPLOYEE TIME STATION
+     * =================================================
+     */
+
+    const APPS_SCRIPT_URL =
+      'https://script.google.com/a/macros/ncjusd.org/s/AKfycbxqTGcOH3wRBIFb8Pv5UEOTJd6MSS60IupodEKSBp0WO-S4-EjZ9m5lLsZyeXoSsY6b/exec';
+
+
+    let scanner = null;
+
+    let scanInProgress = false;
+
+
+    /*
+     * Clean the QR value.
+     */
+    function cleanBadgeValue(value) {
+
+      if (
+        value === null ||
+        value === undefined
+      ) {
+
+        return '';
+
+      }
+
+      return String(value)
+        .trim()
+        .replace(/\s+/g, '')
+        .toUpperCase();
+
+    }
+
+
+    /*
+     * Successful QR scan.
+     */
+    function onScanSuccess(
+      decodedText,
+      decodedResult
+    ) {
+
+      if (scanInProgress) {
+
+        return;
+
+      }
+
+      const badge =
+        cleanBadgeValue(
+          decodedText
+        );
+
+      if (!badge) {
+
+        return;
+
+      }
+
+      sendBadge(badge);
+
+    }
+
+
+    /*
+     * QR scan errors happen continuously while
+     * the camera is searching, so we intentionally
+     * do not display them.
+     */
+    function onScanFailure(error) {
+
+      // No action needed.
+
+    }
+
+
+    /*
+     * Send the employee number to Apps Script.
+     *
+     * We use top-level navigation rather than
+     * fetch(), so the Lenovo's signed-in NCJUSD
+     * Google session can be used by Apps Script.
+     */
+    function sendBadge(badge) {
+
+      if (scanInProgress) {
+
+        return;
+
+      }
+
+      scanInProgress = true;
+
+
+      document
+        .getElementById(
+          'processingOverlay'
+        )
+        .style
+        .display = 'flex';
+
+
+      const destination =
+        APPS_SCRIPT_URL +
+        '?badge=' +
+        encodeURIComponent(badge);
+
+
+      /*
+       * Stop the camera before leaving the page.
+       */
+      try {
+
+        if (scanner) {
+
+          scanner.clear()
+            .catch(function () {
+              // Continue even if scanner cleanup fails.
+            });
+
+        }
+
+      } catch (error) {
+
+        // Continue to Apps Script.
+
+      }
+
+
+      /*
+       * Small delay lets the employee see that
+       * the badge was successfully read.
+       */
+      setTimeout(
+        function () {
+
+          window.location.href =
+            destination;
+
+        },
+        350
+      );
+
+    }
+
+
+    /*
+     * Manual employee number fallback.
+     */
+    function submitManualBadge() {
+
+      const input =
+        document.getElementById(
+          'manualBadge'
+        );
+
+      const badge =
+        cleanBadgeValue(
+          input.value
+        );
+
+      if (!badge) {
+
+        input.focus();
+
+        return;
+
+      }
+
+      sendBadge(badge);
+
+    }
+
+
+    /*
+     * Allow Enter key for manual entry.
+     */
+    document
+      .getElementById(
+        'manualBadge'
+      )
+      .addEventListener(
+        'keydown',
+        function (event) {
+
+          if (
+            event.key === 'Enter'
+          ) {
+
+            submitManualBadge();
+
+          }
+
+        }
+      );
+
+
+    /*
+     * Start the QR scanner.
+     */
+    function startScanner() {
+
+      const status =
+        document.getElementById(
+          'status'
+        );
+
+
+      if (
+        typeof Html5QrcodeScanner ===
+        'undefined'
+      ) {
+
+        status.textContent =
+          'Scanner could not load. Please refresh the page.';
+
+        return;
+
+      }
+
+
+      scanner =
+        new Html5QrcodeScanner(
+          'reader',
+          {
+            fps: 10,
+
+            qrbox: function (
+              viewfinderWidth,
+              viewfinderHeight
+            ) {
+
+              const minimum =
+                Math.min(
+                  viewfinderWidth,
+                  viewfinderHeight
+                );
+
+              const size =
+                Math.floor(
+                  minimum * 0.72
+                );
+
+              return {
+                width: size,
+                height: size
+              };
+
+            },
+
+            aspectRatio: 1.333334,
+
+            rememberLastUsedCamera: true,
+
+            supportedScanTypes: [
+              Html5QrcodeScanType.SCAN_TYPE_CAMERA
+            ]
+          },
+          false
+        );
+
+
+      scanner.render(
+        onScanSuccess,
+        onScanFailure
+      );
+
+
+      status.textContent =
+        'Camera ready — scan your badge.';
+
+    }
+
+
+    /*
+     * Start when page loads.
+     */
+    window.addEventListener(
+      'load',
+      function () {
+
+        setTimeout(
+          startScanner,
+          300
+        );
+
+      }
+    );
+
+  </script>
+
+</body>
+
+</html>
