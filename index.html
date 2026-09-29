@@ -1,33 +1,37 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
   <meta charset="UTF-8">
-
   <meta
     name="viewport"
-    content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no"
+    content="width=device-width, initial-scale=1, maximum-scale=1"
   >
 
   <meta name="theme-color" content="#064b35">
 
   <title>Spring Grove Employee Time Station</title>
 
-  <!-- QR Scanner Library -->
+  <!-- QR scanner -->
   <script
     src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js">
   </script>
 
-  <style>
+  <!-- Google Identity Services -->
+  <script
+    src="https://accounts.google.com/gsi/client">
+  </script>
 
+  <style>
     :root {
       --green: #064b35;
       --dark-green: #033d2b;
       --gold: #d7a928;
-      --cream: #f7f4ea;
       --white: #ffffff;
-      --gray: #62676b;
-      --light-gray: #ececec;
+      --cream: #f8f4e9;
+      --gray: #5f6368;
+      --light-gray: #eef1ef;
+      --success: #16733c;
+      --error: #a61b1b;
     }
 
     * {
@@ -36,13 +40,14 @@
 
     html,
     body {
-      margin: 0;
       width: 100%;
       min-height: 100%;
+      margin: 0;
     }
 
     body {
       min-height: 100vh;
+      padding: 16px;
 
       font-family:
         Arial,
@@ -50,30 +55,44 @@
         sans-serif;
 
       background:
+        radial-gradient(
+          circle at top left,
+          rgba(215, 169, 40, 0.12),
+          transparent 34%
+        ),
         linear-gradient(
           145deg,
           #f8f4e9,
-          #ebe5d7
+          #efe9db
         );
 
       color: var(--dark-green);
 
       display: flex;
       justify-content: center;
+      align-items: center;
     }
 
     .kiosk {
-      width: 100%;
-      max-width: 800px;
-      min-height: 100vh;
+      width: min(100%, 760px);
+      min-height: 94vh;
 
       background: var(--white);
+
+      border-radius: 28px;
+      overflow: hidden;
+
+      border:
+        1px solid
+        rgba(6, 75, 53, 0.12);
+
+      box-shadow:
+        0 16px 46px
+        rgba(0, 0, 0, 0.18);
 
       display: flex;
       flex-direction: column;
     }
-
-    /* HEADER */
 
     .header {
       background:
@@ -85,21 +104,19 @@
 
       color: var(--white);
 
-      text-align: center;
+      padding: 22px 20px 18px;
 
-      padding:
-        24px 18px 20px;
+      text-align: center;
 
       border-bottom:
         7px solid var(--gold);
     }
 
     .logo {
-      width: 72px;
-      height: 72px;
+      width: 68px;
+      height: 68px;
 
-      margin:
-        0 auto 12px;
+      margin: 0 auto 12px;
 
       border-radius: 50%;
 
@@ -107,14 +124,14 @@
 
       border:
         4px solid
-        rgba(255,255,255,.9);
+        rgba(255,255,255,0.9);
 
       color: var(--dark-green);
 
       display: grid;
       place-items: center;
 
-      font-size: 29px;
+      font-size: 27px;
       font-weight: 800;
     }
 
@@ -132,219 +149,250 @@
     }
 
     .station-name {
-      margin:
-        8px 0 0;
+      margin: 7px 0 0;
 
       font-size:
         clamp(
           14px,
-          2.4vw,
+          2.5vw,
           19px
         );
 
-      font-weight: 600;
-
       letter-spacing: 2px;
-
       text-transform: uppercase;
     }
-
-    /* MAIN CONTENT */
 
     .content {
       flex: 1;
 
-      padding:
-        25px 18px 30px;
+      padding: 28px 20px;
 
       display: flex;
       flex-direction: column;
+
+      justify-content: center;
       align-items: center;
 
       text-align: center;
     }
 
-    .instruction {
-      margin:
-        2px 0 6px;
-
-      font-size:
-        clamp(
-          27px,
-          5vw,
-          40px
-        );
-
-      font-weight: 800;
-
-      color: var(--dark-green);
-    }
-
-    .subtext {
-      margin:
-        0 0 20px;
-
-      color: var(--gray);
-
-      font-size:
-        clamp(
-          16px,
-          2.5vw,
-          20px
-        );
-
-      line-height: 1.4;
-    }
-
-    /* CAMERA */
-
-    .camera-card {
+    .screen {
       width: 100%;
-      max-width: 570px;
+    }
 
-      padding: 12px;
-
-      background: var(--dark-green);
-
-      border-radius: 22px;
-
-      box-shadow:
-        0 10px 26px
-        rgba(0,0,0,.18);
+    .hidden {
+      display: none !important;
     }
 
     #reader {
-      width: 100%;
+      width: min(100%, 540px);
+
+      margin:
+        18px auto 0;
 
       overflow: hidden;
 
-      border-radius: 14px;
+      border-radius: 20px;
 
-      background: #000;
+      border:
+        5px solid var(--gold);
+
+      background: #111;
     }
 
-    #reader video {
-      border-radius: 14px;
+    .scan-title {
+      margin: 0;
+
+      font-size:
+        clamp(
+          28px,
+          5vw,
+          42px
+        );
     }
 
-    /* CAMERA TARGET */
+    .scan-instruction {
+      margin:
+        10px auto 0;
 
-    .camera-help {
-      margin-top: 17px;
+      color: var(--gray);
 
-      display: flex;
-      justify-content: center;
-      align-items: center;
+      font-size: 19px;
+      line-height: 1.4;
+    }
 
-      gap: 9px;
+    .status {
+      margin:
+        15px auto 0;
 
-      color: var(--green);
+      min-height: 26px;
 
       font-size: 17px;
       font-weight: 700;
+
+      color: var(--green);
     }
 
-    .qr-icon {
-      width: 25px;
-      height: 25px;
+    .auth-button,
+    .manual-button {
+      border: 0;
+      cursor: pointer;
 
-      display: inline-grid;
-      place-items: center;
+      background: var(--green);
+      color: var(--white);
 
-      border:
-        2px solid var(--green);
+      border-radius: 12px;
 
-      border-radius: 5px;
+      padding: 14px 22px;
 
-      font-size: 14px;
+      font-size: 18px;
+      font-weight: 700;
     }
 
-    /* STATUS */
+    .auth-button {
+      margin-top: 22px;
+    }
 
-    #status {
-      min-height: 28px;
+    .manual-area {
+      width: min(100%, 460px);
 
-      margin-top: 14px;
+      margin:
+        24px auto 0;
+
+      padding-top: 20px;
+
+      border-top:
+        1px solid #ddd;
+    }
+
+    .manual-label {
+      display: block;
+
+      margin-bottom: 9px;
 
       color: var(--gray);
 
       font-size: 15px;
-    }
-
-    /* MANUAL ENTRY */
-
-    .manual-section {
-      width: 100%;
-      max-width: 570px;
-
-      margin-top: 22px;
-      padding-top: 20px;
-
-      border-top:
-        1px solid #dedede;
-    }
-
-    .manual-title {
-      margin:
-        0 0 10px;
-
-      color: var(--gray);
-
-      font-size: 14px;
-      font-weight: 600;
+      font-weight: 700;
     }
 
     .manual-row {
       display: flex;
-
       gap: 8px;
     }
 
-    #manualBadge {
+    #manualEmployeeId {
       flex: 1;
 
       min-width: 0;
 
-      padding:
-        13px 14px;
+      padding: 13px 12px;
 
       border:
-        2px solid #d6d6d6;
+        2px solid #c8cfcb;
 
       border-radius: 10px;
 
       font-size: 18px;
-
-      outline: none;
     }
 
-    #manualBadge:focus {
-      border-color: var(--green);
-    }
+    .status-icon {
+      width: 108px;
+      height: 108px;
 
-    .submit-button {
-      border: 0;
+      margin:
+        0 auto 20px;
 
-      border-radius: 10px;
+      border-radius: 50%;
 
-      padding:
-        12px 18px;
-
-      background: var(--green);
+      display: grid;
+      place-items: center;
 
       color: var(--white);
 
-      font-size: 16px;
+      font-size: 64px;
       font-weight: 700;
 
-      cursor: pointer;
+      box-shadow:
+        0 10px 24px
+        rgba(0,0,0,0.15);
     }
 
-    .submit-button:active {
-      transform: scale(.98);
+    .status-icon.success {
+      background: var(--success);
     }
 
-    /* FOOTER */
+    .status-icon.error {
+      background: var(--error);
+    }
+
+    #resultGreeting {
+      margin:
+        0 0 10px;
+
+      font-size:
+        clamp(
+          30px,
+          6vw,
+          48px
+        );
+    }
+
+    .employee-name {
+      margin:
+        14px 0;
+
+      font-size:
+        clamp(
+          34px,
+          7vw,
+          58px
+        );
+
+      font-weight: 800;
+
+      overflow-wrap: anywhere;
+    }
+
+    .action {
+      margin-top: 8px;
+
+      font-size:
+        clamp(
+          24px,
+          4vw,
+          35px
+        );
+
+      font-weight: 600;
+    }
+
+    .time {
+      margin-top: 10px;
+
+      color: var(--green);
+
+      font-size:
+        clamp(
+          42px,
+          8vw,
+          70px
+        );
+
+      font-weight: 800;
+    }
+
+    .result-message {
+      max-width: 520px;
+
+      margin:
+        22px auto 0;
+
+      color: var(--gray);
+
+      font-size: 20px;
+      line-height: 1.4;
+    }
 
     .footer {
       padding: 15px;
@@ -361,115 +409,28 @@
       letter-spacing: .5px;
     }
 
-    /* PROCESSING OVERLAY */
-
-    #processingOverlay {
-      position: fixed;
-
-      inset: 0;
-
-      z-index: 9999;
-
-      display: none;
-
-      justify-content: center;
-      align-items: center;
-
-      padding: 20px;
-
-      background:
-        rgba(3,61,43,.96);
-
-      color: var(--white);
-
-      text-align: center;
-    }
-
-    .processing-card {
-      width: 100%;
-      max-width: 480px;
-    }
-
-    .processing-check {
-      width: 90px;
-      height: 90px;
-
-      margin:
-        0 auto 22px;
-
-      border-radius: 50%;
-
-      background: var(--gold);
-
-      color: var(--dark-green);
-
-      display: grid;
-      place-items: center;
-
-      font-size: 50px;
-      font-weight: 800;
-    }
-
-    .processing-title {
-      margin: 0;
-
-      font-size:
-        clamp(
-          30px,
-          6vw,
-          46px
-        );
-    }
-
-    .processing-text {
-      margin-top: 12px;
-
-      font-size: 19px;
-
-      opacity: .9;
-    }
-
-    /* MOBILE / TABLET */
-
     @media (max-width: 640px) {
 
-      .header {
-        padding:
-          18px 14px 16px;
+      body {
+        padding: 0;
       }
 
-      .logo {
-        width: 60px;
-        height: 60px;
-
-        font-size: 24px;
+      .kiosk {
+        min-height: 100vh;
+        border-radius: 0;
       }
 
       .content {
         padding:
-          20px 14px 24px;
+          22px 15px;
       }
-
-      .manual-row {
-        flex-direction: column;
-      }
-
-      .submit-button {
-        width: 100%;
-      }
-
     }
-
   </style>
-
 </head>
-
 
 <body>
 
   <main class="kiosk">
-
-    <!-- HEADER -->
 
     <header class="header">
 
@@ -488,77 +449,137 @@
     </header>
 
 
-    <!-- MAIN -->
-
     <section class="content">
 
-      <h2 class="instruction">
-        Scan Your Badge
-      </h2>
+      <!-- AUTHORIZATION SCREEN -->
+      <div
+        id="authScreen"
+        class="screen hidden"
+      >
 
-      <p class="subtext">
-        Hold your QR code in front of the camera.
-      </p>
+        <h2 class="scan-title">
+          Time Station Setup
+        </h2>
+
+        <p class="scan-instruction">
+          Sign in once to activate this Time Station.
+        </p>
+
+        <button
+          id="authorizeButton"
+          class="auth-button"
+          type="button"
+        >
+          Activate Time Station
+        </button>
+
+        <div
+          id="authStatus"
+          class="status"
+        ></div>
+
+      </div>
 
 
-      <!-- CAMERA -->
+      <!-- SCANNER SCREEN -->
+      <div
+        id="scannerScreen"
+        class="screen hidden"
+      >
 
-      <div class="camera-card">
+        <h2 class="scan-title">
+          Scan Employee Badge
+        </h2>
+
+        <p class="scan-instruction">
+          Hold your QR badge in front of the camera.
+        </p>
 
         <div id="reader"></div>
 
-      </div>
+        <div
+          id="scannerStatus"
+          class="status"
+        >
+          Camera ready
+        </div>
 
 
-      <div class="camera-help">
+        <div class="manual-area">
 
-        <span class="qr-icon">
-          ▦
-        </span>
-
-        Position QR code inside the camera
-
-      </div>
-
-
-      <div id="status">
-        Starting camera...
-      </div>
-
-
-      <!-- MANUAL FALLBACK -->
-
-      <div class="manual-section">
-
-        <p class="manual-title">
-          Badge not scanning? Enter employee number:
-        </p>
-
-        <div class="manual-row">
-
-          <input
-            id="manualBadge"
-            type="text"
-            inputmode="numeric"
-            autocomplete="off"
-            placeholder="Employee Number"
+          <label
+            class="manual-label"
+            for="manualEmployeeId"
           >
+            Or enter employee number
+          </label>
 
-          <button
-            class="submit-button"
-            onclick="submitManualBadge()"
-          >
-            Submit
-          </button>
+          <div class="manual-row">
+
+            <input
+              id="manualEmployeeId"
+              type="text"
+              inputmode="numeric"
+              autocomplete="off"
+              placeholder="Employee number"
+            >
+
+            <button
+              id="manualButton"
+              class="manual-button"
+              type="button"
+            >
+              Submit
+            </button>
+
+          </div>
 
         </div>
 
       </div>
 
+
+      <!-- RESULT SCREEN -->
+      <div
+        id="resultScreen"
+        class="screen hidden"
+      >
+
+        <div
+          id="resultIcon"
+          class="status-icon success"
+        >
+          ✓
+        </div>
+
+        <h2 id="resultGreeting">
+          Welcome!
+        </h2>
+
+        <div
+          id="employeeName"
+          class="employee-name"
+        ></div>
+
+        <div
+          id="actionText"
+          class="action"
+        ></div>
+
+        <div
+          id="timeText"
+          class="time"
+        ></div>
+
+        <p
+          id="resultMessage"
+          class="result-message"
+        ></p>
+
+      </div>
+
     </section>
 
-
-    <!-- FOOTER -->
 
     <footer class="footer">
       One School, One Team
@@ -567,325 +588,720 @@
   </main>
 
 
-  <!-- PROCESSING SCREEN -->
-
-  <div id="processingOverlay">
-
-    <div class="processing-card">
-
-      <div class="processing-check">
-        ✓
-      </div>
-
-      <h2 class="processing-title">
-        Badge Read
-      </h2>
-
-      <div class="processing-text">
-        Recording your time...
-      </div>
-
-    </div>
-
-  </div>
-
-
   <script>
 
-    /*
-     * =================================================
-     * SPRING GROVE EMPLOYEE TIME STATION
-     * =================================================
-     */
+    // =====================================================
+    // ENTER YOUR TWO GOOGLE VALUES HERE
+    // =====================================================
 
-    const APPS_SCRIPT_URL =
-      'https://script.google.com/a/macros/ncjusd.org/s/AKfycbxqTGcOH3wRBIFb8Pv5UEOTJd6MSS60IupodEKSBp0WO-S4-EjZ9m5lLsZyeXoSsY6b/exec';
+    const CLIENT_ID =
+      '553943001009-h04rat0prespkhd5k327m56nf07cbdbt.apps.googleusercontent.com';
 
+    const SCRIPT_ID =
+      '1eyfRobz0xRD-snGLzQFDdagl01GB7v2ANnB_gqkbbXkRJsWm7pN3w_us';
+
+    const SCOPES =
+      'https://www.googleapis.com/auth/spreadsheets';
+
+
+    // =====================================================
+    // SETTINGS
+    // =====================================================
+
+    const RESULT_DISPLAY_MS = 4000;
+
+    let tokenClient = null;
+    let accessToken = null;
 
     let scanner = null;
+    let scannerRunning = false;
+    let scanLocked = false;
 
-    let scanInProgress = false;
+    let pendingBadge = null;
 
 
-    /*
-     * Clean the QR value.
-     */
-    function cleanBadgeValue(value) {
+    // =====================================================
+    // PAGE ELEMENTS
+    // =====================================================
+
+    const authScreen =
+      document.getElementById(
+        'authScreen'
+      );
+
+    const scannerScreen =
+      document.getElementById(
+        'scannerScreen'
+      );
+
+    const resultScreen =
+      document.getElementById(
+        'resultScreen'
+      );
+
+    const authorizeButton =
+      document.getElementById(
+        'authorizeButton'
+      );
+
+    const authStatus =
+      document.getElementById(
+        'authStatus'
+      );
+
+    const scannerStatus =
+      document.getElementById(
+        'scannerStatus'
+      );
+
+    const manualEmployeeId =
+      document.getElementById(
+        'manualEmployeeId'
+      );
+
+    const manualButton =
+      document.getElementById(
+        'manualButton'
+      );
+
+
+    // =====================================================
+    // INITIALIZE
+    // =====================================================
+
+    window.addEventListener(
+      'load',
+      initializeTimeStation
+    );
+
+
+    function initializeTimeStation() {
 
       if (
-        value === null ||
-        value === undefined
+        CLIENT_ID.includes('PASTE_') ||
+        SCRIPT_ID.includes('PASTE_')
       ) {
 
-        return '';
+        showAuthScreen();
 
+        authStatus.textContent =
+          'Time Station configuration is incomplete.';
+
+        authorizeButton.disabled = true;
+
+        return;
       }
 
-      return String(value)
-        .trim()
-        .replace(/\s+/g, '')
-        .toUpperCase();
+      tokenClient =
+        google.accounts.oauth2.initTokenClient({
+
+          client_id:
+            CLIENT_ID,
+
+          scope:
+            SCOPES,
+
+          callback:
+            handleTokenResponse
+
+        });
+
+      showAuthScreen();
 
     }
 
 
-    /*
-     * Successful QR scan.
-     */
-    function onScanSuccess(
-      decodedText,
-      decodedResult
-    ) {
+    // =====================================================
+    // AUTHORIZATION
+    // =====================================================
 
-      if (scanInProgress) {
+    authorizeButton.addEventListener(
+      'click',
+      function () {
 
-        return;
+        authStatus.textContent =
+          'Connecting to Google...';
+
+        pendingBadge = null;
+
+        requestToken(true);
 
       }
+    );
 
-      const badge =
-        cleanBadgeValue(
-          decodedText
+
+    function requestToken(showConsent) {
+
+      if (!tokenClient) {
+        return;
+      }
+
+      tokenClient.requestAccessToken({
+        prompt:
+          showConsent
+            ? 'consent'
+            : ''
+      });
+
+    }
+
+
+    function handleTokenResponse(response) {
+
+      if (
+        response.error
+      ) {
+
+        console.error(response);
+
+        accessToken = null;
+
+        showAuthScreen();
+
+        authStatus.textContent =
+          'Google authorization was not completed. Please try again.';
+
+        return;
+      }
+
+      accessToken =
+        response.access_token;
+
+      const badgeToProcess =
+        pendingBadge;
+
+      pendingBadge = null;
+
+      if (badgeToProcess) {
+
+        callTimeStationApi(
+          badgeToProcess
         );
 
-      if (!badge) {
+      } else {
 
-        return;
+        showScanner();
 
       }
-
-      sendBadge(badge);
 
     }
 
 
-    /*
-     * QR scan errors happen continuously while
-     * the camera is searching, so we intentionally
-     * do not display them.
-     */
-    function onScanFailure(error) {
+    // =====================================================
+    // SCANNER
+    // =====================================================
 
-      // No action needed.
+    async function showScanner() {
+
+      scanLocked = false;
+
+      showOnly(
+        scannerScreen
+      );
+
+      scannerStatus.textContent =
+        'Starting camera...';
+
+      await startScanner();
 
     }
 
 
-    /*
-     * Send the employee number to Apps Script.
-     *
-     * We use top-level navigation rather than
-     * fetch(), so the Lenovo's signed-in NCJUSD
-     * Google session can be used by Apps Script.
-     */
-    function sendBadge(badge) {
+    async function startScanner() {
 
-      if (scanInProgress) {
+      if (scannerRunning) {
+
+        scannerStatus.textContent =
+          'Camera ready';
 
         return;
-
       }
 
-      scanInProgress = true;
-
-
-      document
-        .getElementById(
-          'processingOverlay'
-        )
-        .style
-        .display = 'flex';
-
-
-      const destination =
-        APPS_SCRIPT_URL +
-        '?badge=' +
-        encodeURIComponent(badge);
-
-
-      /*
-       * Stop the camera before leaving the page.
-       */
       try {
 
-        if (scanner) {
+        if (!scanner) {
 
-          scanner.clear()
-            .catch(function () {
-              // Continue even if scanner cleanup fails.
-            });
+          scanner =
+            new Html5Qrcode(
+              'reader'
+            );
 
         }
 
-      } catch (error) {
+        const config = {
+          fps: 10,
 
-        // Continue to Apps Script.
-
-      }
-
-
-      /*
-       * Small delay lets the employee see that
-       * the badge was successfully read.
-       */
-      setTimeout(
-        function () {
-
-          window.location.href =
-            destination;
-
-        },
-        350
-      );
-
-    }
-
-
-    /*
-     * Manual employee number fallback.
-     */
-    function submitManualBadge() {
-
-      const input =
-        document.getElementById(
-          'manualBadge'
-        );
-
-      const badge =
-        cleanBadgeValue(
-          input.value
-        );
-
-      if (!badge) {
-
-        input.focus();
-
-        return;
-
-      }
-
-      sendBadge(badge);
-
-    }
-
-
-    /*
-     * Allow Enter key for manual entry.
-     */
-    document
-      .getElementById(
-        'manualBadge'
-      )
-      .addEventListener(
-        'keydown',
-        function (event) {
-
-          if (
-            event.key === 'Enter'
+          qrbox: function (
+            viewfinderWidth,
+            viewfinderHeight
           ) {
 
-            submitManualBadge();
-
-          }
-
-        }
-      );
-
-
-    /*
-     * Start the QR scanner.
-     */
-    function startScanner() {
-
-      const status =
-        document.getElementById(
-          'status'
-        );
-
-
-      if (
-        typeof Html5QrcodeScanner ===
-        'undefined'
-      ) {
-
-        status.textContent =
-          'Scanner could not load. Please refresh the page.';
-
-        return;
-
-      }
-
-
-      scanner =
-        new Html5QrcodeScanner(
-          'reader',
-          {
-            fps: 10,
-
-            qrbox: function (
-              viewfinderWidth,
-              viewfinderHeight
-            ) {
-
-              const minimum =
+            const size =
+              Math.floor(
                 Math.min(
                   viewfinderWidth,
                   viewfinderHeight
-                );
+                ) * 0.72
+              );
 
-              const size =
-                Math.floor(
-                  minimum * 0.72
-                );
+            return {
+              width: size,
+              height: size
+            };
 
-              return {
-                width: size,
-                height: size
-              };
+          }
+        };
 
-            },
-
-            aspectRatio: 1.333334,
-
-            rememberLastUsedCamera: true,
-
-            supportedScanTypes: [
-              Html5QrcodeScanType.SCAN_TYPE_CAMERA
-            ]
+        await scanner.start(
+          {
+            facingMode:
+              'environment'
           },
-          false
+          config,
+          onScanSuccess,
+          function () {
+            // Ignore normal scan misses.
+          }
         );
 
+        scannerRunning = true;
 
-      scanner.render(
-        onScanSuccess,
-        onScanFailure
-      );
+        scannerStatus.textContent =
+          'Camera ready';
 
+      } catch (error) {
 
-      status.textContent =
-        'Camera ready — scan your badge.';
+        console.error(error);
+
+        scannerStatus.textContent =
+          'Camera could not start. Check camera permission and reload the page.';
+
+      }
 
     }
 
 
-    /*
-     * Start when page loads.
-     */
-    window.addEventListener(
-      'load',
+    async function stopScanner() {
+
+      if (
+        !scanner ||
+        !scannerRunning
+      ) {
+        return;
+      }
+
+      try {
+
+        await scanner.stop();
+
+      } catch (error) {
+
+        console.warn(error);
+
+      }
+
+      scannerRunning = false;
+
+    }
+
+
+    function onScanSuccess(
+      decodedText
+    ) {
+
+      if (scanLocked) {
+        return;
+      }
+
+      const badge =
+        String(
+          decodedText || ''
+        ).trim();
+
+      if (!badge) {
+        return;
+      }
+
+      processBadge(
+        badge
+      );
+
+    }
+
+
+    // =====================================================
+    // MANUAL ENTRY
+    // =====================================================
+
+    manualButton.addEventListener(
+      'click',
       function () {
 
-        setTimeout(
-          startScanner,
-          300
+        const badge =
+          manualEmployeeId.value.trim();
+
+        if (!badge) {
+
+          scannerStatus.textContent =
+            'Enter an employee number.';
+
+          return;
+        }
+
+        processBadge(
+          badge
         );
 
       }
     );
 
+
+    manualEmployeeId.addEventListener(
+      'keydown',
+      function (event) {
+
+        if (
+          event.key === 'Enter'
+        ) {
+
+          event.preventDefault();
+
+          manualButton.click();
+
+        }
+
+      }
+    );
+
+
+    // =====================================================
+    // PROCESS BADGE
+    // =====================================================
+
+    async function processBadge(
+      badge
+    ) {
+
+      if (scanLocked) {
+        return;
+      }
+
+      scanLocked = true;
+
+      scannerStatus.textContent =
+        'Recording...';
+
+      await stopScanner();
+
+      manualEmployeeId.value = '';
+
+      if (!accessToken) {
+
+        pendingBadge = badge;
+
+        requestToken(false);
+
+        return;
+      }
+
+      callTimeStationApi(
+        badge
+      );
+
+    }
+
+
+    // =====================================================
+    // APPS SCRIPT API
+    // =====================================================
+
+    async function callTimeStationApi(
+      badge,
+      retryAfterAuth = true
+    ) {
+
+      try {
+
+        const response =
+          await fetch(
+            'https://script.googleapis.com/v1/scripts/' +
+            encodeURIComponent(
+              SCRIPT_ID
+            ) +
+            ':run',
+            {
+
+              method:
+                'POST',
+
+              headers: {
+
+                'Authorization':
+                  'Bearer ' +
+                  accessToken,
+
+                'Content-Type':
+                  'application/json'
+
+              },
+
+              body:
+                JSON.stringify({
+
+                  function:
+                    'processBadgeScan',
+
+                  parameters:
+                    [badge]
+
+                })
+
+            }
+          );
+
+
+        if (
+          response.status === 401 &&
+          retryAfterAuth
+        ) {
+
+          accessToken = null;
+
+          pendingBadge = badge;
+
+          requestToken(false);
+
+          return;
+
+        }
+
+
+        const data =
+          await response.json();
+
+
+        if (!response.ok) {
+
+          console.error(data);
+
+          throw new Error(
+            data.error &&
+            data.error.message
+              ? data.error.message
+              : 'Google API request failed.'
+          );
+
+        }
+
+
+        if (data.error) {
+
+          console.error(data.error);
+
+          throw new Error(
+            data.error.message ||
+            'Apps Script execution failed.'
+          );
+
+        }
+
+
+        const result =
+          data.response &&
+          data.response.result
+            ? data.response.result
+            : null;
+
+
+        if (!result) {
+
+          throw new Error(
+            'No result was returned by the Time Station.'
+          );
+
+        }
+
+
+        showResult(
+          result
+        );
+
+
+      } catch (error) {
+
+        console.error(error);
+
+        showResult({
+
+          success: false,
+
+          message:
+            'The system could not record the scan. Please try again or contact the office.'
+
+        });
+
+      }
+
+    }
+
+
+    // =====================================================
+    // RESULT SCREEN
+    // =====================================================
+
+    function showResult(
+      result
+    ) {
+
+      const success =
+        result &&
+        result.success === true;
+
+
+      const resultIcon =
+        document.getElementById(
+          'resultIcon'
+        );
+
+      const resultGreeting =
+        document.getElementById(
+          'resultGreeting'
+        );
+
+      const employeeName =
+        document.getElementById(
+          'employeeName'
+        );
+
+      const actionText =
+        document.getElementById(
+          'actionText'
+        );
+
+      const timeText =
+        document.getElementById(
+          'timeText'
+        );
+
+      const resultMessage =
+        document.getElementById(
+          'resultMessage'
+        );
+
+
+      resultIcon.className =
+        'status-icon ' +
+        (
+          success
+            ? 'success'
+            : 'error'
+        );
+
+      resultIcon.textContent =
+        success
+          ? '✓'
+          : '!';
+
+
+      if (success) {
+
+        resultGreeting.textContent =
+          result.greeting ||
+          'Welcome!';
+
+        employeeName.textContent =
+          result.employeeName ||
+          '';
+
+        actionText.textContent =
+          result.message ||
+          '';
+
+        timeText.textContent =
+          result.time ||
+          '';
+
+        resultMessage.textContent =
+          result.action === 'IN'
+            ? 'Welcome to Spring Grove!'
+            : 'Thank you for your work today!';
+
+      } else {
+
+        resultGreeting.textContent =
+          'Unable to Record';
+
+        employeeName.textContent =
+          '';
+
+        actionText.textContent =
+          '';
+
+        timeText.textContent =
+          '';
+
+        resultMessage.textContent =
+          result &&
+          result.message
+            ? result.message
+            : 'The scan could not be recorded.';
+
+      }
+
+
+      showOnly(
+        resultScreen
+      );
+
+
+      setTimeout(
+        function () {
+
+          showScanner();
+
+        },
+        RESULT_DISPLAY_MS
+      );
+
+    }
+
+
+    // =====================================================
+    // SCREEN HELPERS
+    // =====================================================
+
+    function showAuthScreen() {
+
+      showOnly(
+        authScreen
+      );
+
+    }
+
+
+    function showOnly(
+      screen
+    ) {
+
+      authScreen.classList.add(
+        'hidden'
+      );
+
+      scannerScreen.classList.add(
+        'hidden'
+      );
+
+      resultScreen.classList.add(
+        'hidden'
+      );
+
+      screen.classList.remove(
+        'hidden'
+      );
+
+    }
+
   </script>
 
 </body>
-
 </html>
