@@ -2,24 +2,13 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <meta
-    name="viewport"
-    content="width=device-width, initial-scale=1, maximum-scale=1"
-  >
-
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
   <meta name="theme-color" content="#064b35">
 
   <title>Spring Grove Employee Time Station</title>
 
-  <!-- QR scanner -->
-  <script
-    src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js">
-  </script>
-
-  <!-- Google Identity Services -->
-  <script
-    src="https://accounts.google.com/gsi/client">
-  </script>
+  <script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
+  <script src="https://accounts.google.com/gsi/client"></script>
 
   <style>
     :root {
@@ -29,7 +18,6 @@
       --white: #ffffff;
       --cream: #f8f4e9;
       --gray: #5f6368;
-      --light-gray: #eef1ef;
       --success: #16733c;
       --error: #a61b1b;
     }
@@ -79,12 +67,11 @@
     }
 
     .header {
-      background:
-        linear-gradient(
-          135deg,
-          var(--dark-green),
-          var(--green)
-        );
+      background: linear-gradient(
+        135deg,
+        var(--dark-green),
+        var(--green)
+      );
       color: var(--white);
       padding: 22px 20px 18px;
       text-align: center;
@@ -166,7 +153,8 @@
     }
 
     .auth-button,
-    .manual-button {
+    .manual-button,
+    .camera-button {
       border: 0;
       cursor: pointer;
       background: var(--green);
@@ -181,9 +169,16 @@
       margin-top: 22px;
     }
 
+    .camera-button {
+      margin-top: 12px;
+      background: var(--dark-green);
+      padding: 11px 20px;
+      font-size: 16px;
+    }
+
     .manual-area {
       width: min(100%, 460px);
-      margin: 24px auto 0;
+      margin: 20px auto 0;
       padding-top: 20px;
       border-top: 1px solid #ddd;
     }
@@ -297,9 +292,7 @@
 
     <header class="header">
 
-      <div class="logo">
-        SG
-      </div>
+      <div class="logo">SG</div>
 
       <h1 class="school-name">
         SPRING GROVE SCHOOL
@@ -311,14 +304,10 @@
 
     </header>
 
-
     <section class="content">
 
-      <!-- AUTHORIZATION SCREEN -->
-      <div
-        id="authScreen"
-        class="screen hidden"
-      >
+      <!-- AUTHORIZATION -->
+      <div id="authScreen" class="screen hidden">
 
         <h2 class="scan-title">
           Time Station Setup
@@ -344,11 +333,8 @@
       </div>
 
 
-      <!-- SCANNER SCREEN -->
-      <div
-        id="scannerScreen"
-        class="screen hidden"
-      >
+      <!-- SCANNER -->
+      <div id="scannerScreen" class="screen hidden">
 
         <h2 class="scan-title">
           Scan Employee Badge
@@ -367,6 +353,13 @@
           Camera ready
         </div>
 
+        <button
+          id="switchCameraButton"
+          class="camera-button"
+          type="button"
+        >
+          Switch Camera
+        </button>
 
         <div class="manual-area">
 
@@ -402,11 +395,8 @@
       </div>
 
 
-      <!-- RESULT SCREEN -->
-      <div
-        id="resultScreen"
-        class="screen hidden"
-      >
+      <!-- RESULT -->
+      <div id="resultScreen" class="screen hidden">
 
         <div
           id="resultIcon"
@@ -443,7 +433,6 @@
 
     </section>
 
-
     <footer class="footer">
       One School, One Team
     </footer>
@@ -473,12 +462,18 @@
 
     const RESULT_DISPLAY_MS = 4000;
 
+    const CAMERA_STORAGE_KEY =
+      'springGrovePreferredCamera';
+
     let tokenClient = null;
     let accessToken = null;
 
     let scanner = null;
     let scannerRunning = false;
     let scanLocked = false;
+
+    let cameras = [];
+    let currentCameraIndex = 0;
 
     let pendingBadge = null;
 
@@ -504,6 +499,9 @@
 
     const scannerStatus =
       document.getElementById('scannerStatus');
+
+    const switchCameraButton =
+      document.getElementById('switchCameraButton');
 
     const manualEmployeeId =
       document.getElementById('manualEmployeeId');
@@ -532,7 +530,6 @@
           scope: SCOPES,
 
           callback: handleTokenResponse
-
         });
 
       showAuthScreen();
@@ -628,6 +625,64 @@
     }
 
 
+    async function loadCameras() {
+
+      cameras =
+        await Html5Qrcode.getCameras();
+
+      if (!cameras || cameras.length === 0) {
+
+        throw new Error(
+          'No cameras were found.'
+        );
+      }
+
+      console.log(
+        'Available cameras:',
+        cameras
+      );
+
+
+      const savedCameraId =
+        localStorage.getItem(
+          CAMERA_STORAGE_KEY
+        );
+
+
+      if (savedCameraId) {
+
+        const savedIndex =
+          cameras.findIndex(
+            function (camera) {
+
+              return (
+                camera.id ===
+                savedCameraId
+              );
+            }
+          );
+
+        if (savedIndex >= 0) {
+
+          currentCameraIndex =
+            savedIndex;
+
+          return;
+        }
+      }
+
+
+      /*
+       * On this Lenovo the rear camera has been
+       * selected by default. Start with the first
+       * camera Chrome provides. The Switch Camera
+       * button lets us identify the correct camera.
+       */
+
+      currentCameraIndex = 0;
+    }
+
+
     async function startScanner() {
 
       if (scannerRunning) {
@@ -648,7 +703,21 @@
             );
         }
 
+
+        if (!cameras.length) {
+
+          await loadCameras();
+        }
+
+
+        const selectedCamera =
+          cameras[
+            currentCameraIndex
+          ];
+
+
         const config = {
+
           fps: 10,
 
           qrbox: function (
@@ -672,69 +741,57 @@
         };
 
 
-        // Get every camera Chrome can see on the Lenovo.
-        const cameras =
-          await Html5Qrcode.getCameras();
-
-        if (!cameras || cameras.length === 0) {
-          throw new Error(
-            'No cameras were found.'
-          );
-        }
-
         console.log(
-          'Available cameras:',
-          cameras
-        );
-
-
-        // Prefer a camera whose label indicates that
-        // it is the front/selfie/user-facing camera.
-        const frontCamera =
-          cameras.find(function (camera) {
-
-            const label =
-              String(
-                camera.label || ''
-              ).toLowerCase();
-
-            return (
-              label.includes('front') ||
-              label.includes('selfie') ||
-              label.includes('user') ||
-              label.includes('facing front')
-            );
-          });
-
-
-        // If Chrome does not label the cameras clearly,
-        // try the LAST camera in the list. On many Android
-        // tablets the rear camera appears first and the
-        // front camera appears last.
-        const selectedCamera =
-          frontCamera ||
-          cameras[cameras.length - 1];
-
-
-        console.log(
-          'Selected camera:',
+          'Starting camera:',
           selectedCamera
         );
 
 
         await scanner.start(
+
           selectedCamera.id,
+
           config,
+
           onScanSuccess,
+
           function () {
             // Ignore normal scan misses.
           }
         );
 
+
         scannerRunning = true;
+
+
+        localStorage.setItem(
+          CAMERA_STORAGE_KEY,
+          selectedCamera.id
+        );
+
 
         scannerStatus.textContent =
           'Camera ready';
+
+
+        /*
+         * Hide the switch button when the tablet
+         * reports only one camera.
+         */
+
+        if (cameras.length <= 1) {
+
+          switchCameraButton.classList.add(
+            'hidden'
+          );
+
+        } else {
+
+          switchCameraButton.classList.remove(
+            'hidden'
+          );
+        }
+
 
       } catch (error) {
 
@@ -766,6 +823,64 @@
 
       scannerRunning = false;
     }
+
+
+    // =====================================================
+    // SWITCH CAMERA
+    // =====================================================
+
+    switchCameraButton.addEventListener(
+      'click',
+      async function () {
+
+        if (
+          !cameras ||
+          cameras.length <= 1
+        ) {
+
+          scannerStatus.textContent =
+            'Only one camera is available.';
+
+          return;
+        }
+
+
+        switchCameraButton.disabled =
+          true;
+
+        scannerStatus.textContent =
+          'Switching camera...';
+
+
+        await stopScanner();
+
+
+        currentCameraIndex =
+          (
+            currentCameraIndex + 1
+          ) % cameras.length;
+
+
+        /*
+         * Save this exact camera ID on the Lenovo.
+         * The Time Station will use it next time.
+         */
+
+        localStorage.setItem(
+          CAMERA_STORAGE_KEY,
+          cameras[
+            currentCameraIndex
+          ].id
+        );
+
+
+        await startScanner();
+
+
+        switchCameraButton.disabled =
+          false;
+      }
+    );
 
 
     function onScanSuccess(
@@ -880,11 +995,13 @@
 
         const response =
           await fetch(
+
             'https://script.googleapis.com/v1/scripts/' +
             encodeURIComponent(
               SCRIPT_ID
             ) +
             ':run',
+
             {
 
               method: 'POST',
@@ -936,6 +1053,7 @@
           console.error(data);
 
           throw new Error(
+
             data.error &&
             data.error.message
               ? data.error.message
@@ -949,6 +1067,7 @@
           console.error(data.error);
 
           throw new Error(
+
             data.error.message ||
             'Apps Script execution failed.'
           );
