@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Time Station Connection Test</title>
+
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      text-align: center;
+      padding: 40px 20px;
+    }
+
+    button {
+      padding: 16px 24px;
+      font-size: 18px;
+      cursor: pointer;
+    }
+
+    #result {
+      margin: 25px auto;
+      max-width: 700px;
+      padding: 20px;
+      border: 2px solid #ccc;
+      border-radius: 12px;
+      white-space: pre-wrap;
+      overflow-wrap: anywhere;
+    }
+  </style>
+</head>
+
+<body>
+
+  <h1>Spring Grove Time Station</h1>
+  <h2>Connection Test</h2>
+
+  <p>This test will not record a punch.</p>
+
+  <button onclick="testConnection()">
+    Test Connection
+  </button>
+
+  <div id="result">
+    Waiting for test.
+  </div>
+
+  <script>
+    const WEB_APP_URL =
+      'https://script.google.com/a/macros/ncjusd.org/s/AKfycby_-ApJxoGTLcpZHhUeHRXjuBzBZGQPMXgbFfhF0WfB8w8THImfHZ9sfy4HMjvLv-PX/exec';
+
+    async function testConnection() {
+
+      const result =
+        document.getElementById('result');
+
+      result.textContent =
+        'Connecting...';
+
+      try {
+
+        const response =
+          await fetch(WEB_APP_URL, {
+            method: 'GET',
+            credentials: 'include'
+          });
+
+        const text =
+          await response.text();
+
+        result.textContent =
+          'SUCCESS\n\n' +
+          'HTTP status: ' +
+          response.status +
+          '\n\n' +
+          text.substring(0, 500);
+
+      } catch (error) {
+
+        console.error(error);
+
+        result.textContent =
+          'CONNECTION BLOCKED\n\n' +
+          error.name +
+          ': ' +
+          error.message;
+      }
+    }
+  </script>
+
+</body>
+</html>
